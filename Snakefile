@@ -1,5 +1,122 @@
+import os
+import re
+#import pandas as pd
+#======================================================
+# Config files
+#======================================================
+configfile: "config.yaml"
+
+#======================================================
+# Global variables
+#======================================================
+
+RAW_DATA_DIR =config['input_dir']
+RESULTS_DIR=config['results_dir'].rstrip("/")
+LONG_ASSEMBLER=config['long_assembler']
+
+if RESULTS_DIR == "" and not RAW_DATA_DIR == "":
+	RESULTS_DIR=os.path.abspath(os.path.join(RAW_DATA_DIR, os.pardir))
 
 
+REPRESENTATIVE_CONTIGS=config['representative_contigs'].rstrip("/")
+VIRAL_CONTIGS=REPRESENTATIVE_CONTIGS
+if VIRAL_CONTIGS == "":
+	VIRAL_CONTIGS_BASE="positive_contigs"
+	VIRAL_CONTIGS_DIR=RESULTS_DIR + "/04_VIRAL_ID"
+	REPRESENTATIVE_CONTIGS_BASE="95-85_positive_contigs"
+	REPRESENTATIVE_CONTIGS_DIR=RESULTS_DIR + "/05_vOTUs"
+else:
+	REPRESENTATIVE_CONTIGS_BASE=os.path.basename(os.path.abspath(VIRAL_CONTIGS)).split(".")[0]
+	REPRESENTATIVE_CONTIGS_DIR=os.path.dirname(os.path.abspath(VIRAL_CONTIGS)).rstrip("/")
+	VIRAL_CONTIGS_BASE=""
+	VIRAL_CONTIGS_DIR=""
+	if RESULTS_DIR== "":
+		RESULTS_DIR=REPRESENTATIVE_CONTIGS_DIR
+
+print(VIRAL_CONTIGS_DIR)
+
+
+
+RULES_DIR = 'rules'
+
+CONFIDENCE_TYPES=["high", "low"]
+SAMPLING_TYPE=config['sampling'].split()
+SAMPLES=""
+
+SRA_list=config['sra_list'].split()
+
+CONTAMINANTS=config['contaminants_list'].split()
+CONTAMINANTS.append("GCF_000819615.1")
+
+
+NANOPORE=False
+TOMBO=False
+PAIRED=False
+READ_TYPES=[config['forward_tag']]
+POOLED=config['nanopore_pooled']
+NANOPORE_SAMPLES=""
+if not RAW_DATA_DIR == "":
+	RAW_DATA_DIR=RAW_DATA_DIR.rstrip("/")
+	SAMPLES,=glob_wildcards(RAW_DATA_DIR + "/{sample}_" + str(config['forward_tag']) + ".fastq")
+	NANOPORE_SAMPLES,=glob_wildcards(RAW_DATA_DIR + "/{sample}_" + str(config['nanopore_tag']) + ".fastq")
+
+	for fname in os.listdir(RAW_DATA_DIR):
+		if fname.endswith(str(config['reverse_tag']) + '.fastq'):
+			PAIRED=True
+		elif fname.endswith(str(config['nanopore_tag']) + '.fastq'):
+			NANOPORE=True
+		elif fname.endswith(str(config['nanopore_tag']) + '_fast5_single'):
+			TOMBO=True
+else:
+	RAW_DATA_DIR=RESULTS_DIR+"/00_RAW_DATA"
+
+
+#NANOPORE_SAMPLES=SAMPLES
+
+if PAIRED:
+	READ_TYPES.append(config['reverse_tag'])
+if POOLED:
+	print("Nanopore reads are from a pooled sample")
+	NANOPORE_SAMPLES=config['nanopore_pooled_name']
+if len(SAMPLES)==1:
+	SAMPLING_TYPE=["tot"]
+SAMPLING_TYPE_TOT=["tot"]
+
+dir_list = ["RULES_DIR","ENVS_DIR", "ADAPTERS_DIR", "CONTAMINANTS_DIR","RAW_DATA_DIR", "QC_DIR", "CLEAN_DATA_DIR", "ASSEMBLY_DIR", "VIRAL_DIR", "vOUT_DIR", "MAPPING_DIR", "MMSEQS", "ANNOTATION", "ASSEMBLY_TEST", "BENCHMARKS"]
+dir_names = ["rules", "../envs", "db/adapters",  RESULTS_DIR + "/db/contaminants" ,RAW_DATA_DIR, RESULTS_DIR + "/01_QC", RESULTS_DIR + "/02_CLEAN_DATA", RESULTS_DIR + "/03_CONTIGS", VIRAL_CONTIGS_DIR , REPRESENTATIVE_CONTIGS_DIR ,RESULTS_DIR + "/06_MAPPING", RESULTS_DIR + "/08_MMSEQS", RESULTS_DIR + "/07_ANNOTATION", RESULTS_DIR + "/08_ASSEMBLY_TEST", RESULTS_DIR + "/BENCHMARK"]
+dirs_dict = dict(zip(dir_list, dir_names))
+
+print("Read Types = " )
+print(*READ_TYPES, sep = ", ")
+
+print("Sample Names = ")
+print(*SAMPLES, sep = ", ")
+
+print("Contaminants = ")
+print(*CONTAMINANTS, sep = ", ")
+
+print("Reference contigs = ")
+print(REPRESENTATIVE_CONTIGS_BASE)
+print(REPRESENTATIVE_CONTIGS_DIR)
+
+print("Results Dir = ")
+print(RESULTS_DIR)
+print("Nanopore = ")
+print(NANOPORE)
+
+print("FAST5 = ")
+print(TOMBO)
+
+print("Nanopore samples= ")
+print(NANOPORE_SAMPLES)
+#======================================================
+# Rules
+#======================================================
+
+
+rule all:
+	input:
+		expand(dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta",sample_nanopore=SAMPLES )
 rule qualityCheckNanopore:
 	input:
 		raw_fastq=dirs_dict["RAW_DATA_DIR"]+"/{sample_nanopore}_nanopore.fastq",
@@ -122,4 +239,4 @@ rule asemblyFlye:
 		"""
 		flye --nano-raw {input.nanopore} --out-dir {params.assembly_dir} --genome-size {params.genome_size} --meta --threads {threads}
 		cp {output.scaffolds} {output.scaffolds_final}
-		"""
+		""rule
