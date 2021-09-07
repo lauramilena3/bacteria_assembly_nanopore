@@ -131,7 +131,7 @@ rule remove_adapters_quality_nanopore:
 	input:
 		raw_data=dirs_dict["RAW_DATA_DIR"] + "/{sample_nanopore}_nanopore.fastq",
 	output:
-		trimmed_data=dirs_dict["RAW_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
+		trimmed_data=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
 		porechopped=temp(dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_porechopped.fastq"),
 	params:
 		headcrop=50,
@@ -150,32 +150,10 @@ rule remove_adapters_quality_nanopore:
 		NanoFilt -q {params.quality} -l 1000 --headcrop {params.headcrop} --tailcrop {params.tailcrop} {output.porechopped} > {output.trimmed_data}
 		"""
 
-rule remove_contaminants_nanopore:
-	input:
-		trimmed_data=dirs_dict["RAW_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
-		contaminants_fasta=expand(dirs_dict["CONTAMINANTS_DIR"] +"/{contaminants}.fasta",contaminants=CONTAMINANTS),
-	output:
-		fastq=(dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_clean.fastq"),
-		size=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_clean.txt",
-		phix_contaminants_fasta=dirs_dict["CONTAMINANTS_DIR"] +"/{sample_nanopore}_nanopore_contaminants.fasta",
-	message:
-		"Remove contamination with Porechop"
-	conda:
-		dirs_dict["ENVS_DIR"]+ "/env1.yaml"
-	benchmark:
-		dirs_dict["BENCHMARKS"] +"/remove_contaminants_nanopore/{sample_nanopore}.tsv"
-	threads: 2
-	shell:
-		"""
-		cat {input.contaminants_fasta} > {output.phix_contaminants_fasta}
-		minimap2 -ax map-ont {output.phix_contaminants_fasta} {input.trimmed_data} | samtools fastq -n -f 4 - > {output.fastq}
-		grep -c "^@" {output.fastq} > {output.size}
-		"""
-
 
 rule postQualityCheckNanopore:
 	input:
-		fastq=(dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_clean.fastq"),
+		fastq=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
 	output:
 		nanoqc_dir=temp(directory(dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanoqc_post")),
 		nanoqc=dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_postQC.html",
@@ -194,7 +172,7 @@ rule postQualityCheckNanopore:
 
 rule qualityStatsNanopore:
 	input:
-		fastq=(dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}.fastq"),
+		fastq=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
 	output:
 		nanostats=dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanostats_postQC.html",
 	message:
@@ -212,7 +190,7 @@ rule qualityStatsNanopore:
 
 rule asemblyFlye:
 	input:
-		nanopore=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_clean.fastq",
+		fastq=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
 	output:
 		scaffolds=dirs_dict["ASSEMBLY_DIR"] + "/flye_{sample_nanopore}/assembly.fasta",
 		scaffolds_final=dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta"
