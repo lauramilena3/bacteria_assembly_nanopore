@@ -71,16 +71,6 @@ else:
 	RAW_DATA_DIR=RESULTS_DIR+"/00_RAW_DATA"
 
 
-#NANOPORE_SAMPLES=SAMPLES
-
-if PAIRED:
-	READ_TYPES.append(config['reverse_tag'])
-if POOLED:
-	print("Nanopore reads are from a pooled sample")
-	NANOPORE_SAMPLES=config['nanopore_pooled_name']
-if len(SAMPLES)==1:
-	SAMPLING_TYPE=["tot"]
-SAMPLING_TYPE_TOT=["tot"]
 
 dir_list = ["RULES_DIR","ENVS_DIR", "ADAPTERS_DIR", "CONTAMINANTS_DIR","RAW_DATA_DIR", "QC_DIR", "CLEAN_DATA_DIR", "ASSEMBLY_DIR", "VIRAL_DIR", "vOUT_DIR", "MAPPING_DIR", "MMSEQS", "ANNOTATION", "ASSEMBLY_TEST", "BENCHMARKS"]
 dir_names = ["rules", "../envs", "db/adapters",  RESULTS_DIR + "/db/contaminants" ,RAW_DATA_DIR, RESULTS_DIR + "/01_QC", RESULTS_DIR + "/02_CLEAN_DATA", RESULTS_DIR + "/03_CONTIGS", VIRAL_CONTIGS_DIR , REPRESENTATIVE_CONTIGS_DIR ,RESULTS_DIR + "/06_MAPPING", RESULTS_DIR + "/08_MMSEQS", RESULTS_DIR + "/07_ANNOTATION", RESULTS_DIR + "/08_ASSEMBLY_TEST", RESULTS_DIR + "/BENCHMARK"]
@@ -116,7 +106,8 @@ print(NANOPORE_SAMPLES)
 
 rule all:
 	input:
-		expand(dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta",sample_nanopore=SAMPLES )
+		expand(dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta",sample_nanopore=NANOPORE_SAMPLES )
+
 rule qualityCheckNanopore:
 	input:
 		raw_fastq=dirs_dict["RAW_DATA_DIR"]+"/{sample_nanopore}_nanopore.fastq",
