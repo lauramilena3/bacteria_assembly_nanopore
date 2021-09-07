@@ -187,7 +187,6 @@ rule qualityStatsNanopore:
 		NanoStat --fastq {input.fastq} > {output.nanostats}
 		"""
 
-
 rule asemblyFlye:
 	input:
 		fastq=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
@@ -206,6 +205,6 @@ rule asemblyFlye:
 	threads: 4
 	shell:
 		"""
-		flye --nano-raw {input.nanopore} --out-dir {params.assembly_dir} --genome-size {params.genome_size} --meta --threads {threads}
+		flye --nano-raw {input.fastq} --out-dir {params.assembly_dir} --genome-size {params.genome_size} --meta --threads {threads}
 		cp {output.scaffolds} {output.scaffolds_final}
 		"""
