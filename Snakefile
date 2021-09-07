@@ -107,6 +107,8 @@ print(NANOPORE_SAMPLES)
 rule all:
 	input:
 		expand(dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta",sample_nanopore=NANOPORE_SAMPLES )
+		expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_preQC.html",sample_nanopore=NANOPORE_SAMPLES )
+		expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_postQC.html",sample_nanopore=NANOPORE_SAMPLES )
 
 rule qualityCheckNanopore:
 	input:
