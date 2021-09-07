@@ -221,22 +221,22 @@ rule qualityStatsNanopore:
 
 rule asemblyFlye:
 	input:
-		nanopore=dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_nanopore_clean.fastq",
+		nanopore=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_clean.fastq",
 	output:
-		scaffolds=dirs_dict["ASSEMBLY_DIR"] + "/flye_{sample}/assembly.fasta",
-		scaffolds_final=dirs_dict["ASSEMBLY_DIR"] + "/{sample}_contigs_flye.fasta"
+		scaffolds=dirs_dict["ASSEMBLY_DIR"] + "/flye_{sample_nanopore}/assembly.fasta",
+		scaffolds_final=dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta"
 	message:
 		"Assembling Nanopore reads with Flye"
 	params:
-		assembly_dir=dirs_dict["ASSEMBLY_DIR"] + "/flye_{sample}",
+		assembly_dir=dirs_dict["ASSEMBLY_DIR"] + "/flye_{sample_nanopore}",
 		genome_size="20m"
 	conda:
 		dirs_dict["ENVS_DIR"] + "/env1.yaml"
 	benchmark:
-		dirs_dict["BENCHMARKS"] +"/asemblyFlye/{sample}.tsv"
+		dirs_dict["BENCHMARKS"] +"/asemblyFlye/{sample_nanopore}.tsv"
 	threads: 4
 	shell:
 		"""
 		flye --nano-raw {input.nanopore} --out-dir {params.assembly_dir} --genome-size {params.genome_size} --meta --threads {threads}
 		cp {output.scaffolds} {output.scaffolds_final}
-		""rule
+		"""
