@@ -48,7 +48,7 @@ rule multiQC:
 		html_name="preQC_illumina_report.html",
 		multiqc_dir=dirs_dict["QC_DIR"],
 	message:
-		"Generating MultiQC report for {wildcards.sample}"
+		"Generating MultiQC report"
 	conda:
 		dirs_dict["ENVS_DIR"]+ "/QC.yaml"
 	benchmark:
