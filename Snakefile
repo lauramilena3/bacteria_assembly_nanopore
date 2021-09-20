@@ -87,10 +87,7 @@ def inputAll(wildcards):
 	inputs=[]
 	inputs.append(dirs_dict["QC_DIR"]+ "/preQC_illumina_report.html")
 	inputs.append(dirs_dict["QC_DIR"]+ "/postQC_illumina_report.html")
-	inputs.extend(expand(dirs_dict["ASSEMBLY_DIR"] + "/assembly_quast_report.{sampling}.txt", sampling=SAMPLING_TYPE_TOT))
-	inputs.extend(expand(dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta",sample_nanopore=NANOPORE_SAMPLES ))
-	inputs.extend(expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_preQC.html",sample_nanopore=NANOPORE_SAMPLES ))
-	inputs.extend(expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_postQC.html",sample_nanopore=NANOPORE_SAMPLES ))
+	inputs.extend(expand(dirs_dict["ASSEMBLY_DIR"] + "/assembly_quast_report.txt", sampling=SAMPLING_TYPE_TOT))
 
 	if NANOPORE:
 		inputs.extend(expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_preQC.html",sample_nanopore=NANOPORE_SAMPLES))
