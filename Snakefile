@@ -12,38 +12,17 @@ configfile: "config.yaml"
 
 RAW_DATA_DIR =config['input_dir']
 RESULTS_DIR=config['results_dir'].rstrip("/")
-LONG_ASSEMBLER=config['long_assembler']
 
 if RESULTS_DIR == "" and not RAW_DATA_DIR == "":
 	RESULTS_DIR=os.path.abspath(os.path.join(RAW_DATA_DIR, os.pardir))
 
 
-REPRESENTATIVE_CONTIGS=config['representative_contigs'].rstrip("/")
-VIRAL_CONTIGS=REPRESENTATIVE_CONTIGS
-if VIRAL_CONTIGS == "":
-	VIRAL_CONTIGS_BASE="positive_contigs"
-	VIRAL_CONTIGS_DIR=RESULTS_DIR + "/04_VIRAL_ID"
-	REPRESENTATIVE_CONTIGS_BASE="95-85_positive_contigs"
-	REPRESENTATIVE_CONTIGS_DIR=RESULTS_DIR + "/05_vOTUs"
-else:
-	REPRESENTATIVE_CONTIGS_BASE=os.path.basename(os.path.abspath(VIRAL_CONTIGS)).split(".")[0]
-	REPRESENTATIVE_CONTIGS_DIR=os.path.dirname(os.path.abspath(VIRAL_CONTIGS)).rstrip("/")
-	VIRAL_CONTIGS_BASE=""
-	VIRAL_CONTIGS_DIR=""
-	if RESULTS_DIR== "":
-		RESULTS_DIR=REPRESENTATIVE_CONTIGS_DIR
-
-print(VIRAL_CONTIGS_DIR)
-
-
 
 RULES_DIR = 'rules'
 
-CONFIDENCE_TYPES=["high", "low"]
 SAMPLING_TYPE=config['sampling'].split()
 SAMPLES=""
 
-SRA_list=config['sra_list'].split()
 
 CONTAMINANTS=config['contaminants_list'].split()
 CONTAMINANTS.append("GCF_000819615.1")
@@ -104,109 +83,29 @@ print(NANOPORE_SAMPLES)
 #======================================================
 
 
+def inputAll(wildcards):
+	inputs=[]
+	inputs.append(dirs_dict["QC_DIR"]+ "/preQC_illumina_report.html")
+	inputs.append(dirs_dict["QC_DIR"]+ "/postQC_illumina_report.html")
+	inputs.extend(expand(dirs_dict["ASSEMBLY_DIR"] + "/assembly_quast_report.{sampling}.txt", sampling=SAMPLING_TYPE_TOT))
+	inputs.extend(expand(dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta",sample_nanopore=NANOPORE_SAMPLES ))
+	inputs.extend(expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_preQC.html",sample_nanopore=NANOPORE_SAMPLES ))
+	inputs.extend(expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_postQC.html",sample_nanopore=NANOPORE_SAMPLES ))
+
+	if NANOPORE:
+		inputs.extend(expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_preQC.html",sample_nanopore=NANOPORE_SAMPLES))
+		inputs.extend(expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_postQC.html", sample_nanopore=NANOPORE_SAMPLES))
+		inputs.extend(expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_postQC.html", sample_nanopore=NANOPORE_SAMPLES))
+
+	return inputs
+
+
 rule all:
 	input:
-		expand(dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta",sample_nanopore=NANOPORE_SAMPLES ),
-		expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_preQC.html",sample_nanopore=NANOPORE_SAMPLES ),
-		expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_postQC.html",sample_nanopore=NANOPORE_SAMPLES ),
-
-rule qualityCheckNanopore:
-	input:
-		raw_fastq=dirs_dict["RAW_DATA_DIR"]+"/{sample_nanopore}_nanopore.fastq",
-	output:
-		nanoqc_dir=temp(directory(dirs_dict["RAW_DATA_DIR"] + "/{sample_nanopore}_nanoplot")),
-		nanoqc=dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_preQC.html",
-	message:
-		"Performing nanoQC statistics"
-	conda:
-		dirs_dict["ENVS_DIR"] + "/env3.yaml"
-	benchmark:
-		dirs_dict["BENCHMARKS"] +"/qualityCheckNanopore/{sample_nanopore}.tsv"
-#	threads: 1
-	shell:
-		"""
-		nanoQC -o {output.nanoqc_dir} {input.raw_fastq}
-		mv {output.nanoqc_dir}/nanoQC.html {output.nanoqc}
-		"""
-
-rule remove_adapters_quality_nanopore:
-	input:
-		raw_data=dirs_dict["RAW_DATA_DIR"] + "/{sample_nanopore}_nanopore.fastq",
-	output:
-		trimmed_data=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
-		porechopped=temp(dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_porechopped.fastq"),
-	params:
-		headcrop=50,
-		tailcrop=50,
-		quality=10,
-	message:
-		"Trimming Nanopore Adapters with Porechop"
-	conda:
-		dirs_dict["ENVS_DIR"]+ "/env3.yaml"
-	benchmark:
-		dirs_dict["BENCHMARKS"] +"/remove_adapters_quality_nanopore/{sample_nanopore}.tsv"
-	threads: 2
-	shell:
-		"""
-		porechop -i {input.raw_data} -o {output.porechopped} --threads {threads}
-		NanoFilt -q {params.quality} -l 1000 --headcrop {params.headcrop} --tailcrop {params.tailcrop} {output.porechopped} > {output.trimmed_data}
-		"""
+		inputAll,
 
 
-rule postQualityCheckNanopore:
-	input:
-		fastq=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
-	output:
-		nanoqc_dir=temp(directory(dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanoqc_post")),
-		nanoqc=dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_postQC.html",
-	message:
-		"Performing nanoQC statistics"
-	conda:
-		dirs_dict["ENVS_DIR"] + "/env3.yaml"
-	benchmark:
-		dirs_dict["BENCHMARKS"] +"/postQualityCheckNanopore/{sample_nanopore}.tsv"
-#	threads: 1
-	shell:
-		"""
-		nanoQC -o {output.nanoqc_dir} {input.fastq}
-		mv {output.nanoqc_dir}/nanoQC.html {output.nanoqc}
-		"""
 
-rule qualityStatsNanopore:
-	input:
-		fastq=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
-	output:
-		nanostats=dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanostats_postQC.html",
-	message:
-		"Performing nanoQC statistics"
-	conda:
-		dirs_dict["ENVS_DIR"] + "/env3.yaml"
-	benchmark:
-		dirs_dict["BENCHMARKS"] +"/qualityStatsNanopore/{sample_nanopore}.tsv"
-#	threads: 1
-	shell:
-		"""
-		NanoStat --fastq {input.fastq} > {output.nanostats}
-		"""
-
-rule asemblyFlye:
-	input:
-		fastq=dirs_dict["CLEAN_DATA_DIR"] + "/{sample_nanopore}_nanopore_nanofilt.fastq",
-	output:
-		scaffolds=dirs_dict["ASSEMBLY_DIR"] + "/flye_{sample_nanopore}/assembly.fasta",
-		scaffolds_final=dirs_dict["ASSEMBLY_DIR"] + "/{sample_nanopore}_contigs_flye.fasta"
-	message:
-		"Assembling Nanopore reads with Flye"
-	params:
-		assembly_dir=dirs_dict["ASSEMBLY_DIR"] + "/flye_{sample_nanopore}",
-		genome_size="20m"
-	conda:
-		dirs_dict["ENVS_DIR"] + "/env1.yaml"
-	benchmark:
-		dirs_dict["BENCHMARKS"] +"/asemblyFlye/{sample_nanopore}.tsv"
-	threads: 4
-	shell:
-		"""
-		flye --nano-raw {input.fastq} --out-dir {params.assembly_dir} --genome-size {params.genome_size} --meta --threads {threads}
-		cp {output.scaffolds} {output.scaffolds_final}
-		"""
+include: os.path.join(RULES_DIR, '01_long_read_qc.smk')
+include: os.path.join(RULES_DIR, '01_short_read_qc.smk')
+include: os.path.join(RULES_DIR, '02_assembly.smk')
