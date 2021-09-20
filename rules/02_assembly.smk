@@ -32,7 +32,7 @@ rule shortReadAsemblySpadesPE:
 	params:
 		raw_scaffolds=dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades.scaffolds.fasta",
 		assembly_graph=dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades.assembly_graph.fastg",
-		assembly_dir=directory(dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades",
+		assembly_dir=directory(dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades"),
 	message:
 		"Assembling PE reads with metaSpades"
 	conda:
