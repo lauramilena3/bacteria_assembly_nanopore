@@ -64,10 +64,6 @@ print(*SAMPLES, sep = ", ")
 print("Contaminants = ")
 print(*CONTAMINANTS, sep = ", ")
 
-print("Reference contigs = ")
-print(REPRESENTATIVE_CONTIGS_BASE)
-print(REPRESENTATIVE_CONTIGS_DIR)
-
 print("Results Dir = ")
 print(RESULTS_DIR)
 print("Nanopore = ")
