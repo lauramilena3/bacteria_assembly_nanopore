@@ -169,12 +169,12 @@ rule postQualityCheckIlluminaPE:
 		reverse_paired=(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_reverse_paired_clean.fastq"),
 		unpaired=dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_unpaired_clean.fastq",
 	output:
-		html_forward=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_forward_paired_clean.fastqc.html"),
-		zipped_forward=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_forward_paired_clean.fastqc.zip"),
-		html_reverse=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_reverse_paired_clean.fastqc.html"),
-		zipped_reverse=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_reverse_paired_clean.fastqc.zip"),
-		html_unpaired=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_unpaired_clean.fastqc.html"),
-		zipped_unpaired=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_unpaired_clean.fastqc.zip"),
+		html_forward=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_forward_paired_clean_fastqc.html"),
+		zipped_forward=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_forward_paired_clean_fastqc.zip"),
+		html_reverse=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_reverse_paired_clean_fastqc.html"),
+		zipped_reverse=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_reverse_paired_clean_fastqc.zip"),
+		html_unpaired=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_unpaired_clean_fastqc.html"),
+		zipped_unpaired=temp(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_unpaired_clean_fastqc.zip"),
 	params:
 		postQC_dir=dirs_dict["CLEAN_DATA_DIR"] +"/postQC",
 	message:
@@ -193,12 +193,12 @@ rule postQualityCheckIlluminaPE:
 
 rule postMultiQC:
 	input:
-		html_forward=expand(dirs_dict["CLEAN_DATA_DIR"]  + "/postQC" + "/{sample}_forward_paired_clean.fastqc.html", sample=SAMPLES),
-		zipped_forward=expand(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_forward_paired_clean.fastqc.zip", sample=SAMPLES),
-		html_reverse=expand(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_reverse_paired_clean.fastqc.html", sample=SAMPLES),
-		zipped_reverse=expand(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_reverse_paired_clean.fastqc.zip", sample=SAMPLES),
-		html_unpaired=expand(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_unpaired_clean.fastqc.html", sample=SAMPLES),
-		zipped_unpaired=expand(dirs_dict["CLEAN_DATA_DIR"]  + "/postQC" + "/{sample}_unpaired_clean.fastqc.zip", sample=SAMPLES),
+		html_forward=expand(dirs_dict["CLEAN_DATA_DIR"]  + "/postQC" + "/{sample}_forward_paired_clean_fastqc.html", sample=SAMPLES),
+		zipped_forward=expand(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_forward_paired_clean_fastqc.zip", sample=SAMPLES),
+		html_reverse=expand(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_reverse_paired_clean_fastqc.html", sample=SAMPLES),
+		zipped_reverse=expand(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_reverse_paired_clean_fastqc.zip", sample=SAMPLES),
+		html_unpaired=expand(dirs_dict["CLEAN_DATA_DIR"] + "/postQC" + "/{sample}_unpaired_clean_fastqc.html", sample=SAMPLES),
+		zipped_unpaired=expand(dirs_dict["CLEAN_DATA_DIR"]  + "/postQC" + "/{sample}_unpaired_clean_fastqc.zip", sample=SAMPLES),
 	output:
 		multiqc=dirs_dict["QC_DIR"]+ "/postQC_illumina_report.html"
 	params:
