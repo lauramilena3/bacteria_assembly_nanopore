@@ -83,7 +83,7 @@ def inputAll(wildcards):
 	inputs=[]
 	inputs.append(dirs_dict["QC_DIR"]+ "/preQC_illumina_report.html")
 	inputs.append(dirs_dict["QC_DIR"]+ "/postQC_illumina_report.html")
-	inputs.append(dirs_dict["ASSEMBLY_DIR"] + "/assembly_quast_report.txt")
+	#inputs.append(dirs_dict["ASSEMBLY_DIR"] + "/assembly_quast_report.txt")
 
 	if NANOPORE:
 		inputs.extend(expand(dirs_dict["QC_DIR"] + "/{sample_nanopore}_nanopore_report_preQC.html",sample_nanopore=NANOPORE_SAMPLES))
