@@ -191,24 +191,6 @@ rule postQualityCheckIlluminaPE:
 		fastqc {input.unpaired} -o {params.postQC_dir}
 		"""
 
-rule postQualityCheckIlluminaSE:
-	input:
-		unpaired=dirs_dict["CLEAN_DATA_DIR"] + "/post_{sample}_unpaired_clean.fastq",
-	output:
-		html=(dirs_dict["CLEAN_DATA_DIR"] + "/post_{sample}_unpaired_clean.fastqc.html"),
-		zipped=temp(dirs_dict["CLEAN_DATA_DIR"] + "/post_{sample}_unpaired_clean.fastqc.zip")
-	message:
-		"Performing fastqQC statistics"
-	conda:
-		dirs_dict["ENVS_DIR"] + "/QC.yaml"
-	benchmark:
-		dirs_dict["BENCHMARKS"] +"/postQualityCheckIlluminaSE/{sample}.tsv"
-#	threads: 1
-	shell:
-		"""
-		fastqc {input}
-		"""
-
 rule postMultiQC:
 	input:
 		html_forward=expand(dirs_dict["CLEAN_DATA_DIR"]  + "/postQC" + "/{sample}_forward_paired_clean.fastqc.html", sample=SAMPLES),
