@@ -31,7 +31,7 @@ CONTAMINANTS.append("GCF_000819615.1")
 NANOPORE=False
 TOMBO=False
 PAIRED=False
-READ_TYPES=[config['forward_tag']]
+READ_TYPES=[config['forward_tag'], config['reverse_tag']]
 POOLED=config['nanopore_pooled']
 NANOPORE_SAMPLES=""
 if not RAW_DATA_DIR == "":
