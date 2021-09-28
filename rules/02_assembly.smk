@@ -30,8 +30,8 @@ rule shortReadAsemblySpadesPE:
 		filtered_list=(dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades.filtered_list.txt"),
 		assembly_graph=dirs_dict["ASSEMBLY_DIR"] +"/{sample}_assembly_graph_spades.fastg",
 	params:
-		raw_scaffolds=dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades.scaffolds.fasta",
-		assembly_graph=dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades.assembly_graph.fastg",
+		raw_scaffolds=dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades/scaffolds.fasta",
+		assembly_graph=dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades/assembly_graph.fastg",
 		assembly_dir=directory(dirs_dict["ASSEMBLY_DIR"] + "/{sample}_spades"),
 	message:
 		"Assembling PE reads with metaSpades"
