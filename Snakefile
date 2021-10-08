@@ -84,6 +84,8 @@ def inputAll(wildcards):
 	inputs.append(dirs_dict["QC_DIR"]+ "/preQC_illumina_report.html")
 	inputs.append(dirs_dict["QC_DIR"]+ "/postQC_illumina_report.html")
 	inputs.append(dirs_dict["ASSEMBLY_DIR"] + "/assembly_quast_report.txt")
+	inputs.extend(expand(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_kraken2_report.csv", sample=SAMPLES)),
+
 
 
 	if NANOPORE:
