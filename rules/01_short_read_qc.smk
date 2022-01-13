@@ -1,30 +1,9 @@
-rule downloadContaminants:
-	output:
-		contaminant_fasta=dirs_dict["CONTAMINANTS_DIR"] +"/{contaminant}.fasta",
-		contaminant_dir=temp(directory(dirs_dict["CONTAMINANTS_DIR"] +"/temp_{contaminant}")),
-	message:
-		"Downloading contaminant genomes"
-	params:
-		contaminants_dir=dirs_dict["CONTAMINANTS_DIR"],
-	conda:
-		dirs_dict["ENVS_DIR"]+ "/env1.yaml",
-	threads:
-		16
-	shell:
-		"""
-		mkdir {output.contaminant_dir}
-		cd {output.contaminant_dir}
-		wget $(esearch -db "assembly" -query {wildcards.contaminant} | esummary | xtract -pattern DocumentSummary -element FtpPath_RefSeq | awk -F"/" '{{print $0"/"$NF"_genomic.fna.gz"}}')
-		gunzip -f *gz
-		cat *fna >> {output.contaminant_fasta}
-		"""
-
 rule qualityCheckIllumina:
 	input:
 		raw_fastq=dirs_dict["RAW_DATA_DIR"]+"/{sample}_{reads}.fastq"
 	output:
 		html=(dirs_dict["RAW_DATA_DIR"] + "/{sample}_{reads}_fastqc.html"),
-		zipped=temp(dirs_dict["RAW_DATA_DIR"] + "/{sample}_{reads}_fastqc.zip")
+		zipped=(dirs_dict["RAW_DATA_DIR"] + "/{sample}_{reads}_fastqc.zip")
 	message:
 		"Performing fastqQC statistics"
 	conda:
@@ -60,8 +39,8 @@ rule multiQC:
 
 rule trim_adapters_quality_illumina_PE:
 	input:
-		forward=dirs_dict["RAW_DATA_DIR"] + "/{sample}_" + str(config['forward_tag']) + ".fastq",
-		reverse=dirs_dict["RAW_DATA_DIR"] + "/{sample}_" + str(config['reverse_tag']) + ".fastq",
+		forward_fastq=dirs_dict["RAW_DATA_DIR"] + "/{sample}_" + str(config['forward_tag']) + ".fastq",
+		reverse_fastq=dirs_dict["RAW_DATA_DIR"] + "/{sample}_" + str(config['reverse_tag']) + ".fastq",
 	output:
 		forward_paired=(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_forward_paired.fastq"),
 		reverse_paired=(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_reverse_paired.fastq"),
@@ -81,7 +60,7 @@ rule trim_adapters_quality_illumina_PE:
 	shell:
 		"""
 		echo leading {config[trimmomatic_leading]} trailing {config[trimmomatic_trailing]} winsize {config[trimmomatic_window_size]} winqual {config[trimmomatic_window_quality]} minlnth {config[trimmomatic_minlen]} > {output.trimmomatic_values}
-		trimmomatic PE -threads {threads} -phred33 {input.forward} {input.reverse} \
+		trimmomatic PE -threads {threads} -phred33 {input.forward_fastq} {input.reverse_fastq} \
 		{output.forward_paired} {output.forward_unpaired} {output.reverse_paired} {output.reverse_unpaired} \
 		ILLUMINACLIP:{params.adapters}:2:30:10:2:true LEADING:{config[trimmomatic_leading]} TRAILING:{config[trimmomatic_trailing]} \
 		SLIDINGWINDOW:{config[trimmomatic_window_size]}:{config[trimmomatic_window_quality]} MINLEN:{config[trimmomatic_minlen]}
@@ -314,7 +293,7 @@ rule contaminants_KRAKEN:
 		kraken_report=(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_kraken2_report.csv"),
 		kraken_domain=(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_kraken2_domains.csv"),
 	params:
-		kraken_db=config['kraken_db']+ "/minikraken2_v2_8GB_201904_UPDATE",
+		kraken_db=config['kraken_db']+ "/minikraken_8GB_20200312/",
 	message:
 		"Kraken contamination"
 	conda:

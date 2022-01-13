@@ -84,7 +84,9 @@ def inputAll(wildcards):
 	inputs.append(dirs_dict["QC_DIR"]+ "/preQC_illumina_report.html")
 	inputs.append(dirs_dict["QC_DIR"]+ "/postQC_illumina_report.html")
 	inputs.append(dirs_dict["ASSEMBLY_DIR"] + "/assembly_quast_report.txt")
+	inputs.append(dirs_dict["CLEAN_DATA_DIR"] + "/kmer_rarefraction_plot.png")
 	inputs.extend(expand(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_kraken2_report.csv", sample=SAMPLES)),
+
 
 
 
@@ -101,7 +103,7 @@ rule all:
 		inputAll,
 
 
-
+include: os.path.join(RULES_DIR, '00_download_tools.smk')
 include: os.path.join(RULES_DIR, '01_long_read_qc.smk')
 include: os.path.join(RULES_DIR, '01_short_read_qc.smk')
 include: os.path.join(RULES_DIR, '02_assembly.smk')
