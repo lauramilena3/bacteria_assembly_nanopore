@@ -249,7 +249,7 @@ rule kmer_rarefraction:
 
 rule plot_kmer:
 	input:
-		histograms=expand(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_kmer_histogram...csv", sample=SAMPLES),
+		histograms=expand(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_kmer_histogram.csv", sample=SAMPLES),
 	output:
 		plot=(dirs_dict["CLEAN_DATA_DIR"] + "/kmer_rarefraction_plot.png"),
 		svg=(dirs_dict["CLEAN_DATA_DIR"] + "/kmer_rarefraction_plot.svg"),
