@@ -108,7 +108,7 @@ rule rarefraction_run:
 
 rule contamination_run:
 	input:
-	expand(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_kraken2_report.csv", sample=SAMPLES)
+		expand(dirs_dict["CLEAN_DATA_DIR"] + "/{sample}_kraken2_report.csv", sample=SAMPLES)
 
 include: os.path.join(RULES_DIR, '00_download_tools.smk')
 include: os.path.join(RULES_DIR, '01_long_read_qc.smk')
